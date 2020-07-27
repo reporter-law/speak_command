@@ -3,4 +3,8 @@
 # Author: cao wang
 # Datetime : 2020
 # software: PyCharm
-from .speak_command import command_speak
+# 收获:
+import speak_command
+
+
+print(speak_command)

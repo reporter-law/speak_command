@@ -1,6 +1,6 @@
-Metadata-Version: 1.0
+Metadata-Version: 1.2
 Name: speak-command
-Version: 0.0.1
+Version: 0.0.4
 Summary: 语音控制
 Home-page: https://github.com/reporter-law/speak_command
 Author: cw
@@ -9,3 +9,4 @@ License: GPL Licence
 Description: 实现语音输入输出，综合组合了语音转文本、文本转语音、录音、自然语言处理等技术，实现语音控制 
 Keywords: baidu-aip,speech_recognition,pyaudio
 Platform: any
+Requires-Python: >=3.8.*

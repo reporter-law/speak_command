@@ -1,3 +1,4 @@
+README.md
 setup.py
 speak_command/__init__.py
 speak_command/speak_command.py

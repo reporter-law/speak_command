@@ -3,4 +3,5 @@
 # Author: cao wang
 # Datetime : 2020
 # software: PyCharm
-# 收获:
+__version__ = "1.1.0"
+from .speak_command import *

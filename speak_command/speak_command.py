@@ -47,7 +47,7 @@ class Sound_from_text():
 
     def sound(self,text,tone="知性女音"):
         try:
-            bindata = self.TTS(text, 6, '中文', tone)
+            bindata = self.TTS(text, 5, '中文', tone)
             with open(self.output_sound_file  + 'result.wav', 'wb+') as f:
                 f.write(bindata)
             song = AudioSegment.from_mp3(self.output_sound_file + 'result.wav')
@@ -110,7 +110,11 @@ class Sound_recognition():
                 return self.r.recognize_google(audio, language='zh_CN')
             except:
                 res = self.r.recognize_google(audio, language='zh_CN',show_all=True)  # 汉语
-                return res["alternative"][0]["transcript"]
+                if res == []:
+                    text = "没有声音"
+                    self.s(text)
+                else:
+                    return res["alternative"][0]["transcript"]
 
             # print('文本内容: ', r.recognize_sphinx(audio))  # 英语
         else:
@@ -237,7 +241,11 @@ class Text_from_recoding():
 
             """继续语音识别"""
             condition = self.sg(file_confire)
-            print("\r语音命令为："+condition,end="\n")
+            try:
+                print("\r语音命令为："+condition,end="\n")
+            except:
+                print("\n没有指令存在")
+                break
             exit_ = ["不继续", "结束", "不进行", "不", "退出", "滚"]
             for i_ in exit_:
                 if i_ in condition:
@@ -356,7 +364,11 @@ def command_speak():
     Sr = Sound_recognition
     s = Sound_from_text().sound
     path = tr()
-    path_list = glob.glob(os.path.join(path,"*"))
+    try:
+        path_list = glob.glob(os.path.join(path,"*"))
+    except:
+        print("命令不存在")
+        sys.exit()
     #print("当前命令录音所在地址为： ",path_list)
     if len(path_list) == 1:
         try:
@@ -377,4 +389,4 @@ def command_speak():
 
     return commands
 
-
+print(command_speak())

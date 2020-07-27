@@ -340,15 +340,17 @@ class Command_manager():
         for x in psg.lcut(command.strip()):
             if x.flag in ['n', 'nr', 'ns'] and len(x.word) > 1:
                 city.append(x.word)
-
-        for city in city:
-            with open(file_path, "r",encoding="utf-8")as f:
-                a = f.read()
-                content = re.findall(r'[\u4e00-\u9fa5]+', a)
-                content = process.extract(city, content)
-                for i in content:
-                    if i[1] >= 90:
-                        commands.append(city)
+        try:
+            for city in city:
+                with open(file_path, "r", encoding="utf-8")as f:
+                    a = f.read()
+                    content = re.findall(r'[\u4e00-\u9fa5]+', a)
+                    content = process.extract(city, content)
+                    for i in content:
+                        if i[1] >= 90:
+                            commands.append(city)
+        except:
+            print("语料库错误")
         if len(commands) <=1:
             return commands
         else:
@@ -357,8 +359,8 @@ class Command_manager():
 
 
 
-
-def command_speak():
+path = "//".join(sys.argv[0].split("/")[:-2])+"//Step1_1_StatsGov.txt"
+def command_speak(file_path=""):
     global commands
     tr = Text_from_recoding().thread_record
     Sr = Sound_recognition
@@ -371,10 +373,29 @@ def command_speak():
         sys.exit()
     #print("当前命令录音所在地址为： ",path_list)
     if len(path_list) == 1:
+        command = [Sr().speech_google(path_list[0])]
+        #print(command)
         try:
-            command= [Sr().speech_google(path_list[0])]
+            math = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9','零', '一', '二', '两', '三', '四', '五', '六', '七',
+                    '八', '九','十', '百']
+            list_bool = []
+            for i in [map(lambda x:x in "".join(command),math)]:
+                for i in i:
+                    list_bool.append(i)
+            #print(list_bool)
+            if True in list_bool:#布尔值列表
+                commands = Command_manager().chinese_math(command)  # 命令处理程序
+                print("数字命令")
 
-            commands = Command_manager().chinese_simple_command(command)#命令处理程序
+            else:
+                commands = list(str(command))
+                print(commands)
+                if len(commands) < 5:
+                    commands = Command_manager().chinese_simple_command(command)
+                    print("简单命令")
+                else:
+                    commands = commands = Command_manager().chinese_complex_command("".join(command),file_path)
+                    print("复杂命令")
         except:
             print("\r识别出错",end="")
     else:
@@ -389,4 +410,3 @@ def command_speak():
 
     return commands
 
-print(command_speak())

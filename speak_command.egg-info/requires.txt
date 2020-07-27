@@ -5,3 +5,4 @@ baidu-aip
 numpy
 jieba
 fuzzywuzzy
+SpeechRecognition

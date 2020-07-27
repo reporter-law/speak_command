@@ -1,0 +1,8 @@
+pyaudio
+requests
+pydub
+speech_recognition
+baidu-aip
+numpy
+jieba
+fuzzywuzzy

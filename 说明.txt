@@ -1,0 +1,5 @@
+pip包上传、制作
+目录结构为
+目录下打包：python setup.py sdist
+目录下上传：twine upload J:\pyinstaller\Python3.8版本项目\语音命令库\speak_command\dist\speak_command-0.0.1.tar.gz
+需要输入pypi账号密码

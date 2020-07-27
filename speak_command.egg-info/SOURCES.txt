@@ -1,0 +1,8 @@
+setup.py
+speak_command/__init__.py
+speak_command/speak_command.py
+speak_command.egg-info/PKG-INFO
+speak_command.egg-info/SOURCES.txt
+speak_command.egg-info/dependency_links.txt
+speak_command.egg-info/requires.txt
+speak_command.egg-info/top_level.txt

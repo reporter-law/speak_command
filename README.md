@@ -7,8 +7,9 @@
     pip install speak_command
   
 使用方式：
-    import speak_command
-    print(speak_command)
+    import speak_command as sc
+    text = sc.command_speak()
+    print(text)
 注意问题：需要挂上vpn，因为使用了谷歌语音识别。
 
 vpn用的是蓝灯破解自动500M流量，

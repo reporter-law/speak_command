@@ -8,5 +8,8 @@
   
 使用方式：
 
-    from speak_command import command_speak
-    text = command_speak()
+    import speak_command
+    print(speak_command)
+注意问题：
+
+  

@@ -7,6 +7,7 @@
     pip install speak_command
   
 使用方式：
+
     import speak_command as sc
     text = sc.command_speak()
     print(text)

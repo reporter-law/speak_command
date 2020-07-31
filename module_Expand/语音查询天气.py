@@ -8,7 +8,7 @@ import re
 from sys import path
 path.append(r'J:\PyCharm项目\学习书籍成果\其他库\语音播报\天气查询程序')
 from WeatherAPITest import weather_main as wm
-from 语音命令库.语音命令模块.语音命令模块 import command_speak as cs
+from 语音命令库.speak_commands.语音命令模块 import command_speak as cs
 from jieba import posseg as psg
 from fuzzywuzzy import process
 

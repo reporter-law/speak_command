@@ -1,0 +1,11 @@
+pyaudio
+requests
+pydub
+baidu-aip
+numpy
+jieba
+fuzzywuzzy
+SpeechRecognition
+schedule
+lxml
+selenium

@@ -15,11 +15,13 @@ from pydub.playback import play
 import speech_recognition as sr
 from aip import AipSpeech
 import re
+from lxml import etree
 import numpy as np
 from jieba import posseg as psg
 from fuzzywuzzy import process
-
-
+import logging
+import jieba
+jieba.setLogLevel(logging.INFO)
 
 r = sr.Recognizer()
 
@@ -29,9 +31,8 @@ class Sound_from_text():
 
     def TTS(self,text, speed, lan, per):
         """文本转语音输出"""
-        convertTable = {'中文': ('ZH', {'标准女音': 0, '标准男音': 1, '斯文男音': 3,
-                                      '小萌萌': 4, '知性女音': 5, '老教授': 6, '葛平音': 8, '播音员': 9, '京腔': 10,
-                                      '温柔大叔': 11}),
+        convertTable = {'中文': ('ZH', {'标准女音': 0, '标准男音': 1, '斯文男音': 3,'小萌萌': 4, '知性女音': 5, '老教授': 6,"男音1":2,
+                                      '葛平音': 8, '播音员': 9, '京腔': 10,'温柔大叔': 11}),
                         '英式英语': ('UK', {'标准音': 0}), '美式英语': ('EN', {'标准音': 0}),
                         '粤语': ('CTE', {'标准音': 0})}
         data = {'tex': text, 'spd': speed, 'lan': convertTable[lan][0],
@@ -47,7 +48,7 @@ class Sound_from_text():
 
     def sound(self,text,tone="知性女音"):
         try:
-            bindata = self.TTS(text, 6, '中文', tone)
+            bindata = self.TTS(text, 5, '中文', tone)
             with open(self.output_sound_file  + 'result.wav', 'wb+') as f:
                 f.write(bindata)
             song = AudioSegment.from_mp3(self.output_sound_file + 'result.wav')
@@ -110,7 +111,11 @@ class Sound_recognition():
                 return self.r.recognize_google(audio, language='zh_CN')
             except:
                 res = self.r.recognize_google(audio, language='zh_CN',show_all=True)  # 汉语
-                return res["alternative"][0]["transcript"]
+                if res == []:
+                    text = "没有声音"
+                    self.s(text)
+                else:
+                    return res["alternative"][0]["transcript"]
 
             # print('文本内容: ', r.recognize_sphinx(audio))  # 英语
         else:
@@ -145,15 +150,14 @@ class Text_from_recoding():
         RECORD_SECONDS = 5  # 记录秒数
         second = 10
         p = pyaudio.PyAudio()
-        stream = p.open(format=FORMAT, channels=CHANNELS, rate=RATE, input=True,
-                        frames_per_buffer=CHUNK)
+        stream = p.open(format=FORMAT, channels=CHANNELS, rate=RATE, input=True, frames_per_buffer=CHUNK)
         # 语音说明
 
         if i%2==0:#除法都是浮点数
 
             text = "\r是否退出程序？"
         else:
-            text = "\r开始聆听命令：............................"
+            text = "\r先惠ai为你服务：............................"
         self.s(text)
         print(text, end="\t")
 
@@ -237,8 +241,12 @@ class Text_from_recoding():
 
             """继续语音识别"""
             condition = self.sg(file_confire)
-            print("\r语音命令为："+condition,end="\n")
-            exit_ = ["不继续", "结束", "不进行", "不", "退出", "滚"]
+            try:
+                print("\r语音命令为："+condition,end="\n")
+            except:
+                print("\n没有指令存在")
+                break
+            exit_ = ["不继续", "结束", "不进行", "退出", "滚"]
             for i_ in exit_:
                 if i_ in condition:
                     text = "命令读取程序自此退出，将进入命令执行程序"
@@ -249,11 +257,12 @@ class Text_from_recoding():
 
 
 class Command_manager():
-    def __init__(self):
-        pass
-
+    """语音命令处理"""
+    def __init__(self,filepath=""):
         self.word = {'零': 0, '一': 1, '二': 2, '两': 2, '三': 3, '四': 4, '五': 5, '六': 6, '七': 7, '八': 8, '九': 9,
                                 '十': 10, '百': 100, '千': 1000, '万': 10000, '亿': 100000000}
+        self.file_path = filepath
+        self.path = os.path.abspath(os.path.dirname(__file__))
 
     def chinese2digits(self,uchars_chinese):
         """纯粹中文数字转阿拉伯"""
@@ -308,73 +317,117 @@ class Command_manager():
         return int(math)
     def chinese_simple_command(self,command):
         """对简单中文命令进行处理"""
-        """
-        fre = {}
-        command = []
-        for i in list(command):
-            if i in fre:
-                fre[i] += 1
-            else:
-                fre[i] = 1
-        for number, i in enumerate(fre.values()):
-            if i > 1:
-                pass
-            else:
-                command.append(list(fre.keys())[number])
-        return ''.join(command)
-        """
         return command
-    def chinese_complex_command(self,command,file_path):
+    
+    def stop_words_download(self):
+        """如果需要的化，停用词下载以备复杂中文命令去除"""
+        
+        r = requests.get("https://github.com/goto456/stopwords/blob/master/cn_stopwords.txt")
+        html = etree.HTML(r.text)
+        node_list = html.xpath('/html/body/div[4]/div/main/div[2]/div/div[3]/div[2]/table//*/text()')
+        text = re.findall(r'[\u4e00-\u9fa5]+', str(node_list))
+        for i in text:
+            with open(self.path+"\\stop_words.txt", "a", encoding="utf-8")as f:
+                f.write(i + ",")
+    
+    def chinese_complex_command(self,command):
         """中文复杂命令，切词以及模糊匹配,file_path为语料库"""
-
         city = []
         commands = []
-        for x in psg.lcut(command.strip()):
-            if x.flag in ['n', 'nr', 'ns'] and len(x.word) > 1:
-                city.append(x.word)
-
-        for city in city:
-            with open(file_path, "r",encoding="utf-8")as f:
-                a = f.read()
-                content = re.findall(r'[\u4e00-\u9fa5]+', a)
-                content = process.extract(city, content)
-                for i in content:
-                    if i[1] >= 90:
-                        commands.append(city)
+        #print(city)
+        #print(command)
+        try:
+            if self.file_path == "":
+                print("已经忽略了语料库的输入")
+                for x in psg.lcut(command.strip()):
+                    #print(x.word,x)
+                    if x.flag in ['v', 'n', 'nr', 'ns','t',"m"] and len(x.word) > 1:
+                        city.append(x.word)
+                commands = city
+                #print(commands)
+            else:
+                """对名词进行语料库识别与充实"""
+                for x in psg.lcut(command.strip()):
+                    if x.flag in ['v'] and len(x.word) > 1:
+                        commands.append(x.word)
+                    elif x.flag in ['n', 'nr', 'ns'] and len(x.word) > 1:
+                        with open(self.file_path, "r", encoding="utf-8")as f:
+                            a = f.read()
+                            content = re.findall(r'[\u4e00-\u9fa5]+', a)
+                            content = process.extract(x.word, content)
+                            print(content)
+                            for i in content:
+                                if i[1] >= 90:
+                                    commands.append(i[0])
+        
+        except:
+            print("语料库错误")
+        #print(commands)
         if len(commands) <=1:
             return commands
         else:
             print("提示：可能存在多个有意义的命令")
             return commands
+        
+        
+    def command_type_classify(self,command):
+        try:
+            math = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '零', '一', '二', '两', '三', '四', '五', '六', '七',
+                    '八', '九', '十', '百']
+            list_bool = []
+            for i in [map(lambda x: x in "".join(command), math)]:
+                for i in i:
+                    list_bool.append(i)
+            # print(list_bool)
+            if True in list_bool:  # 布尔值列表
+                commands = self.chinese_math(command)  # 命令处理程序
+                print("命令类型一：数字命令")
+
+            else:
+                commands = list("".join(command))
+                if len(commands) < 5:
+                    commands = self.chinese_simple_command(command)
+                    print("命令类型二：简单中文命令")
+                else:
+                    commands = self.chinese_complex_command("".join(command))
+                    print("命令类型三：复杂中文命令")
+            return commands
+        except:
+            print("\r识别出错", end="")
+        
+        
 
 
 
 
-def command_speak():
+def command_speak(filepath=""):
     global commands
     tr = Text_from_recoding().thread_record
     Sr = Sound_recognition
     s = Sound_from_text().sound
     path = tr()
-    path_list = glob.glob(os.path.join(path,"*"))
+    try:
+        path_list = glob.glob(os.path.join(path,"*"))
+    except:
+        print("命令不存在")
+        sys.exit()
     #print("当前命令录音所在地址为： ",path_list)
     if len(path_list) == 1:
-        try:
-            command= [Sr().speech_google(path_list[0])]
+        command = [Sr().speech_google(path_list[0])]
+        commands = Command_manager(filepath).command_type_classify(command)
+       
+    elif len(path_list) == 0:
+        commands = "无声"
 
-            commands = Command_manager().chinese_simple_command(command)#命令处理程序
-        except:
-            print("\r识别出错",end="")
     else:
         text="语音命令有多条，将逐一执行，注意返回命令为列表"
         s(text)
         commands = []
         for path in path_list:
             command =Sr().speech_google(path)
-            command = Command_manager().chinese_simple_command(command)
+            command = Command_manager(filepath).command_type_classify(command)
             commands.append(command)
 
 
     return commands
-
 

@@ -31,3 +31,4 @@ for number,i in enumerate(fre.values()):
 for i in [('长沙镇', 90), ('长沙乡', 90), ('长沙乡', 90), ('长沙市', 90), ('长沙雨花经济开发区管理委员会', 90)]:
     if "市" in i[0]:
         print(i)
+

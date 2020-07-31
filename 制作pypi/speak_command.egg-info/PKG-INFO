@@ -1,0 +1,12 @@
+Metadata-Version: 1.2
+Name: speak-command
+Version: 0.1.0
+Summary: 语音控制，增加了唤醒命令以及程序任务接口、部分接口程序
+Home-page: https://github.com/reporter-law/speak_command
+Author: cw
+Author-email: 1063117365@qq.com
+License: GPL Licence
+Description: 实现语音唤醒，基于调度命令长期调度直到唤醒命令，实现语音输入输出；综合了语音转文本、文本转语音、录音、自然语言处理、爬虫等技术；实现语音控制，依据传入命令调动该命令意图实现的程序，当然这需要任务程序的接口；依据任务程序的数量实现程序泛化
+Keywords: baidu-aip,speech_recognition,pyaudio
+Platform: any
+Requires-Python: >=3.7.*
